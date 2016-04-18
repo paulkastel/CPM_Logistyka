@@ -1,11 +1,17 @@
 
 public class Czynnosc
 {
-	int Czas;
+	int Czas;	//Czas czynnosci
 
-	Zdarzenie poprzednie;
-	Zdarzenie nastepne;
+	Zdarzenie poprzednie;	//Poprzednie zdarzenie
+	Zdarzenie nastepne;		//Nastepujace zdarzenie po czynnosci
 
+	/**
+	 * Konstruktor czynnosci
+	 * @param cz czas trwania
+	 * @param last	popczenie zdarzenie
+	 * @param next nastepujace zdarzenie
+	 */
 	Czynnosc(int cz, Zdarzenie last, Zdarzenie next)
 	{
 		Czas = cz;
@@ -13,6 +19,9 @@ public class Czynnosc
 		nastepne = next;
 	}
 
+	/**
+	 * Konstruktor dla picu
+	 */
 	Czynnosc()
 	{
 		
