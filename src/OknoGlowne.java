@@ -26,7 +26,7 @@ public class OknoGlowne extends javax.swing.JFrame
 		//Uruchom jezeli jest podany graf wpp wyswietl komunikat
 		if (!Strzalki.isEmpty())
 		{
-			
+
 			//Zadaj kadzemu elementowi czas poczatkowy (jest ok) i wyswietl do konsoli
 			for (int i = 0; i < Strzalki.size(); i++)
 			{
@@ -37,8 +37,8 @@ public class OknoGlowne extends javax.swing.JFrame
 					Strzalki.get(i).nastepne.end_time = Integer.MAX_VALUE;
 				}
 
-				System.out.println(Strzalki.get(i).poprzednie.Nazwa + " do " + Strzalki.get(i).nastepne.Nazwa);
-				System.out.println(Strzalki.get(i).poprzednie.start_time + "+" + Strzalki.get(i).Czas + "=" + Strzalki.get(i).nastepne.start_time);
+				//System.out.println(Strzalki.get(i).poprzednie.Nazwa + " do " + Strzalki.get(i).nastepne.Nazwa);
+				//System.out.println(Strzalki.get(i).poprzednie.start_time + "+" + Strzalki.get(i).Czas + "=" + Strzalki.get(i).nastepne.start_time);
 
 				//x.nastepne.start_time = x.poprzednie.start_time + x.Czas;
 				//System.out.println(x.poprzednie.Nazwa + " do " + x.nastepne.Nazwa);
@@ -61,7 +61,7 @@ public class OknoGlowne extends javax.swing.JFrame
 				{
 					Strzalki.get(i).poprzednie.end_time = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).Czas;
 				}
-				
+
 				Strzalki.get(i).nastepne.luz = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).nastepne.start_time;
 				//Strzalki.get(i).poprzednie.end_time = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).Czas;
 				//System.out.println(Strzalki.get(i).nastepne.Nazwa + " do " + Strzalki.get(i).poprzednie.Nazwa);
@@ -70,7 +70,6 @@ public class OknoGlowne extends javax.swing.JFrame
 			Strzalki.get(0).poprzednie.luz = 0;
 			Strzalki.get(0).poprzednie.end_time = 0;
 
-			
 			//Przydzielam zdarzeniom w liscie wydarzen ich czasy poczatkowe
 			for (int i = 0; i < Wydarzenia.size() - 1; i++)
 			{
@@ -86,21 +85,26 @@ public class OknoGlowne extends javax.swing.JFrame
 				Wydarzenia.get(i).start_time = Strzalki.get(licz).poprzednie.start_time;
 				Wydarzenia.get(i).end_time = Strzalki.get(licz).poprzednie.end_time;
 				Wydarzenia.get(i).luz = Strzalki.get(licz).poprzednie.luz;
-				System.err.println(Wydarzenia.get(i).Nazwa + ": " + Wydarzenia.get(i).start_time+" "+ Wydarzenia.get(i).end_time+" "+ Wydarzenia.get(i).luz );
+				//System.err.println(Wydarzenia.get(i).Nazwa + ": " + Wydarzenia.get(i).start_time + " " + Wydarzenia.get(i).end_time + " " + Wydarzenia.get(i).luz);
 			}
 			Wydarzenia.get(Wydarzenia.size() - 1).start_time = Strzalki.get(Strzalki.size() - 1).nastepne.start_time;
 			Wydarzenia.get(Wydarzenia.size() - 1).end_time = Strzalki.get(Strzalki.size() - 1).nastepne.end_time;
 			Wydarzenia.get(Wydarzenia.size() - 1).luz = Strzalki.get(Strzalki.size() - 1).nastepne.luz;
-			
+
 			//Wylicz luzy w kazdym Zdarzeniu i jezeli luz ==0 to dodaj do listy ze sciezka krytyczna
-			for (int i = Wydarzenia.size() - 1; i > 0; i--)
+			for (Zdarzenie x : Wydarzenia)
 			{
-				Wydarzenia.get(i).luz = Wydarzenia.get(i).end_time - Wydarzenia.get(i).start_time;
-				if (Wydarzenia.get(i).luz == 0)
+				if (x.luz == 0)
 				{
-					criticalpath.add(Wydarzenia.get(i));
+					criticalpath.add(x);
 				}
 			}
+			String KriticPath = "";
+			for (Zdarzenie x : criticalpath)
+			{
+				KriticPath += " -> "+x.Nazwa;
+			}
+			JOptionPane.showMessageDialog(null, KriticPath, "SciezkaKrytyczna", JOptionPane.PLAIN_MESSAGE);
 		}
 		else
 		{
