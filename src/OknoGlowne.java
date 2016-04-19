@@ -27,24 +27,51 @@ public class OknoGlowne extends javax.swing.JFrame
 		if (!Strzalki.isEmpty())
 		{
 			//Zadaj kadzemu elementowi czas poczatkowy (jest ok) i wyswietl do konsoli
-			for (Czynnosc x : Strzalki)
+			for (int i = 0; i < Strzalki.size(); i++)
 			{
-				x.nastepne.start_time = x.poprzednie.start_time + x.Czas;
+				//SPRAWDZAJ CZY NOWY NIE JEST MNIEJSZY I POTEM PRZY END_TIME NIE JEST WIEKSZY CZY COS
+				Strzalki.get(i).nastepne.start_time = Strzalki.get(i).poprzednie.start_time + Strzalki.get(i).Czas;
 
-				System.out.println(x.poprzednie.Nazwa + " do " + x.nastepne.Nazwa);
-				System.out.println(x.poprzednie.start_time + "+" + x.Czas + "=" + x.nastepne.start_time);
+				System.out.println(Strzalki.get(i).poprzednie.Nazwa + " do " + Strzalki.get(i).nastepne.Nazwa);
+				System.out.println(Strzalki.get(i).poprzednie.start_time + "+" + Strzalki.get(i).Czas + "=" + Strzalki.get(i).nastepne.start_time);
+
+				//x.nastepne.start_time = x.poprzednie.start_time + x.Czas;
+				//System.out.println(x.poprzednie.Nazwa + " do " + x.nastepne.Nazwa);
+				//System.out.println(x.poprzednie.start_time + "+" + x.Czas + "=" + x.nastepne.start_time);
 			}
 
+			//Przydzielam zdarzeniom w liscie wydarzen ich czasy poczatkowe
+			for (int i = 0; i < Wydarzenia.size() - 1; i++)
+			{
+				int licz = 0;
+				for (int j = 0; j < Strzalki.size(); j++)
+				{
+					if (Strzalki.get(j).poprzednie.Nazwa.equals(Wydarzenia.get(i).Nazwa))
+					{
+						break;
+					}
+					licz++;
+				}
+				Wydarzenia.get(i).start_time = Strzalki.get(licz).poprzednie.start_time;
+				//System.out.println(Wydarzenia.get(i).Nazwa + ": " + Wydarzenia.get(i).start_time);
+			}
+			Wydarzenia.get(Wydarzenia.size() - 1).start_time = Strzalki.get(Strzalki.size() - 1).nastepne.start_time;
+
+			
+			
 			//Ostatni element start_time=end_time
 			Strzalki.get(Strzalki.size() - 1).nastepne.end_time = Strzalki.get(Strzalki.size() - 1).nastepne.start_time;
 
 			//Zadaj kazdemu elementowi czas koncowy od tylu do poczatku
 			for (int i = Strzalki.size() - 1; i > 0; i--)
 			{
+				if(Strzalki.get(i-1).nastepne.Nazwa.equals(Strzalki.get(i).nastepne.Nazwa))
+				{
+					Strzalki.get(i-1).nastepne.end_time= Strzalki.get(i).nastepne.end_time;
+				}
 				Strzalki.get(i).poprzednie.end_time = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).Czas;
-
-				//System.out.println(Strzalki.get(i).nastepne.Nazwa + " do " + Strzalki.get(i).poprzednie.Nazwa);
-				//System.out.println(Strzalki.get(i).nastepne.end_time + "-" + Strzalki.get(i).Czas + "=" + Strzalki.get(i).poprzednie.end_time);
+				System.out.println(Strzalki.get(i).nastepne.Nazwa + " do " + Strzalki.get(i).poprzednie.Nazwa);
+				System.out.println(Strzalki.get(i).nastepne.end_time + "-" + Strzalki.get(i).Czas + "=" + Strzalki.get(i).poprzednie.end_time);
 			}
 
 			//Wylicz luzy w kazdym Zdarzeniu i jezeli luz ==0 to dodaj do listy ze sciezka krytyczna
@@ -509,8 +536,9 @@ public class OknoGlowne extends javax.swing.JFrame
     }//GEN-LAST:event_WyznaczSciezkeActionPerformed
 
 	/**
-	 * wczytuje dane z sformatowanego pliku: 
-	 * nazwa poprzedniego eventu, nazwa nastepnego eventu, czas trwania 
+	 * wczytuje dane z sformatowanego pliku: nazwa poprzedniego eventu, nazwa
+	 * nastepnego eventu, czas trwania
+	 *
 	 * @param evt
 	 */
     private void WczytajzPlikuActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_WczytajzPlikuActionPerformed
