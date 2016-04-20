@@ -1,29 +1,33 @@
-
+/**
+ * Klasa czynnosci. Reprezentuje strzalki w grafie. Laczy ze soba dwa wydarzenia
+ * poprzednie z nastepnym
+ * @author kastel
+ */
 public class Czynnosc
 {
-	int Czas;	//Czas czynnosci
+
+	String nazwa_czynnosci;	//Nazwa zdarzenia
+	int Czas;				//Czas czynnosci
 
 	Zdarzenie poprzednie;	//Poprzednie zdarzenie
 	Zdarzenie nastepne;		//Nastepujace zdarzenie po czynnosci
 
-	/**
-	 * Konstruktor czynnosci
-	 * @param cz czas trwania
-	 * @param last	popczenie zdarzenie
-	 * @param next nastepujace zdarzenie
-	 */
-	Czynnosc(int cz, Zdarzenie last, Zdarzenie next)
-	{
-		Czas = cz;
-		poprzednie = last;
-		nastepne = next;
-	}
+	String nazw_poprz;
+	String nazw_next;
+
 
 	/**
-	 * Konstruktor dla picu
+	 * Konstruktor czynnosci przymujacy nazwy zdarzen
+	 *
+	 * @param cz czas trwania
+	 * @param _last	poprzednie zdarzenie
+	 * @param _next nastepujace zdarzenie
 	 */
-	Czynnosc()
+	Czynnosc(String _nazwa, int cz, String _prev, String _next)
 	{
-		
+		nazwa_czynnosci = _nazwa;
+		Czas = cz;
+		nazw_poprz = _prev;
+		nazw_next = _next;
 	}
 }

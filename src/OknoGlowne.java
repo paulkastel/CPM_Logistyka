@@ -2,11 +2,6 @@
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /**
  *
@@ -16,95 +11,94 @@ public class OknoGlowne extends javax.swing.JFrame
 {
 
 	/**
-	 * Wyznacza Sciezke krytyczna w grafie
+	 * Wypelnia wszystkie wydarzenia w liscie wydarzen ich czasami startowymi
+	 * pobranymi na podstawie poprzedniego wydarzenia i czasu czynnosci
+	 */
+	public void ObliczCzasStartowy()
+	{
+		for (Czynnosc c : Strzalki)
+		{
+			String prev = c.nazw_poprz;
+			String next = c.nazw_next;
+
+			//Jezeli nazwy wydarzen w czynnosci zgadzaja sie z nazwami wydarzen
+			//w liscie wydarzen to przypisz obiekt wydarzenia do obiektow w czynnosci
+			for (Zdarzenie z : Wydarzenia)
+			{
+				if (z.Nazwa.equals(prev))
+				{
+					c.poprzednie = z;
+				}
+				if (z.Nazwa.equals(next))
+				{
+					c.nastepne = z;
+				}
+			}
+
+			//Przypisz do wydarzen w czynnosciach najwiekszy czas startowy jaki sie da
+			int tmpCzasStartowy = c.poprzednie.start_time + c.Czas;
+			if (tmpCzasStartowy > c.nastepne.start_time)
+			{
+				c.nastepne.start_time = tmpCzasStartowy;
+			}
+		}
+
+		//Ostatnie wydarzenie ma zawsze czas startowy = czas koncowy
+		Strzalki.get(Strzalki.size() - 1).nastepne.end_time = Strzalki.get(Strzalki.size() - 1).nastepne.start_time;
+	}
+
+	/**
+	 * Wylicza czasy koncowe wszystkich wydarzen w liscie czynnosci w malejacej
+	 * petli
+	 */
+	public void ObliczCzasKoncowy()
+	{
+		//Przejedz liste czynnosci od tylu i najmniejszy mozliwy czas koncowy przypisz do wydarzenia
+		for (int i = Strzalki.size() - 1; i >= 0; i--)
+		{
+			int tmpCzasKoncowy = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).Czas;
+
+			if (tmpCzasKoncowy < Strzalki.get(i).poprzednie.end_time)
+			{
+				Strzalki.get(i).poprzednie.end_time = tmpCzasKoncowy;
+			}
+		}
+		//Pierwsze wydarzenie ma zawsze endtime=0, jakis problem z przypisaniem danej
+		Strzalki.get(0).poprzednie.end_time = 0;
+	}
+
+	/**
+	 * Oblicza luzy we wszystkich wydarzeniach w liscie czynnosci
+	 */
+	public void ObliczLuz()
+	{
+		for (Czynnosc c : Strzalki)
+		{
+			c.poprzednie.luz = c.poprzednie.end_time - c.poprzednie.start_time;
+		}
+		Strzalki.get(Strzalki.size() - 1).nastepne.luz = Strzalki.get(Strzalki.size() - 1).nastepne.end_time - Strzalki.get(Strzalki.size() - 1).nastepne.start_time;
+	}
+
+	/**
+	 * Wyznacza Sciezke krytyczna w grafie i wyswietla jej rezultat
 	 */
 	public void SciezkaKrytyczna()
 	{
-		//Lista bedaca sciezka krytyczna
-		List<Zdarzenie> criticalpath = new ArrayList<>();
-
-		//Uruchom jezeli jest podany graf wpp wyswietl komunikat
 		if (!Strzalki.isEmpty())
 		{
+			ObliczCzasStartowy();
+			ObliczCzasKoncowy();
+			ObliczLuz();
 
-			//Zadaj kadzemu elementowi czas poczatkowy (jest ok) i wyswietl do konsoli
-			for (int i = 0; i < Strzalki.size(); i++)
+			String cpm = "Sciezka: ";
+			for (Zdarzenie z : Wydarzenia)
 			{
-				//SPRAWDZAJ CZY NOWY NIE JEST MNIEJSZY I POTEM PRZY END_TIME NIE JEST WIEKSZY CZY COS
-				if (Strzalki.get(i).nastepne.start_time < Strzalki.get(i).poprzednie.start_time + Strzalki.get(i).Czas)
+				if (z.luz == 0)
 				{
-					Strzalki.get(i).nastepne.start_time = Strzalki.get(i).poprzednie.start_time + Strzalki.get(i).Czas;
-					Strzalki.get(i).nastepne.end_time = Integer.MAX_VALUE;
-				}
-
-				//System.out.println(Strzalki.get(i).poprzednie.Nazwa + " do " + Strzalki.get(i).nastepne.Nazwa);
-				//System.out.println(Strzalki.get(i).poprzednie.start_time + "+" + Strzalki.get(i).Czas + "=" + Strzalki.get(i).nastepne.start_time);
-
-				//x.nastepne.start_time = x.poprzednie.start_time + x.Czas;
-				//System.out.println(x.poprzednie.Nazwa + " do " + x.nastepne.Nazwa);
-				//System.out.println(x.poprzednie.start_time + "+" + x.Czas + "=" + x.nastepne.start_time);
-			}
-
-			//Ostatni element start_time=end_time
-			Strzalki.get(Strzalki.size() - 1).nastepne.end_time = Strzalki.get(Strzalki.size() - 1).nastepne.start_time;
-
-			//Zadaj kazdemu elementowi czas koncowy od tylu do poczatku
-			for (int i = Strzalki.size() - 1; i > 0; i--)
-			{
-				if (Strzalki.get(i - 1).nastepne.Nazwa.equals(Strzalki.get(i).nastepne.Nazwa))
-				{
-					Strzalki.get(i - 1).nastepne.end_time = Strzalki.get(i).nastepne.end_time;
-				}
-
-				//Strzalki.get(i).poprzednie.end_time = Strzalki.get(i).poprzednie.start_time; 
-				if (Strzalki.get(i).poprzednie.end_time > (Strzalki.get(i).nastepne.end_time - Strzalki.get(i).Czas))
-				{
-					Strzalki.get(i).poprzednie.end_time = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).Czas;
-				}
-
-				Strzalki.get(i).nastepne.luz = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).nastepne.start_time;
-				//Strzalki.get(i).poprzednie.end_time = Strzalki.get(i).nastepne.end_time - Strzalki.get(i).Czas;
-				//System.out.println(Strzalki.get(i).nastepne.Nazwa + " do " + Strzalki.get(i).poprzednie.Nazwa);
-				//System.out.println(Strzalki.get(i).nastepne.end_time + "-" + Strzalki.get(i).Czas + "=" + Strzalki.get(i).poprzednie.end_time);
-			}
-			Strzalki.get(0).poprzednie.luz = 0;
-			Strzalki.get(0).poprzednie.end_time = 0;
-
-			//Przydzielam zdarzeniom w liscie wydarzen ich czasy poczatkowe
-			for (int i = 0; i < Wydarzenia.size() - 1; i++)
-			{
-				int licz = 0;
-				for (int j = 0; j < Strzalki.size(); j++)
-				{
-					if (Strzalki.get(j).poprzednie.Nazwa.equals(Wydarzenia.get(i).Nazwa))
-					{
-						break;
-					}
-					licz++;
-				}
-				Wydarzenia.get(i).start_time = Strzalki.get(licz).poprzednie.start_time;
-				Wydarzenia.get(i).end_time = Strzalki.get(licz).poprzednie.end_time;
-				Wydarzenia.get(i).luz = Strzalki.get(licz).poprzednie.luz;
-				//System.err.println(Wydarzenia.get(i).Nazwa + ": " + Wydarzenia.get(i).start_time + " " + Wydarzenia.get(i).end_time + " " + Wydarzenia.get(i).luz);
-			}
-			Wydarzenia.get(Wydarzenia.size() - 1).start_time = Strzalki.get(Strzalki.size() - 1).nastepne.start_time;
-			Wydarzenia.get(Wydarzenia.size() - 1).end_time = Strzalki.get(Strzalki.size() - 1).nastepne.end_time;
-			Wydarzenia.get(Wydarzenia.size() - 1).luz = Strzalki.get(Strzalki.size() - 1).nastepne.luz;
-
-			//Wylicz luzy w kazdym Zdarzeniu i jezeli luz ==0 to dodaj do listy ze sciezka krytyczna
-			for (Zdarzenie x : Wydarzenia)
-			{
-				if (x.luz == 0)
-				{
-					criticalpath.add(x);
+					cpm += z.Nazwa + ", ";
 				}
 			}
-			String KriticPath = "";
-			for (Zdarzenie x : criticalpath)
-			{
-				KriticPath += " -> "+x.Nazwa;
-			}
-			JOptionPane.showMessageDialog(null, KriticPath, "SciezkaKrytyczna", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(null, cpm, "Sciezka krytyczna", JOptionPane.PLAIN_MESSAGE);
 		}
 		else
 		{
@@ -119,6 +113,7 @@ public class OknoGlowne extends javax.swing.JFrame
 	List<Zdarzenie> Wydarzenia = new ArrayList<>();			//Lista Zdarzen
 	List<Czynnosc> Strzalki = new ArrayList<>();			//Lista czynnosci laczaca zdarzenia
 	File plik = new File("Graf.txt");						//Plik z ktorego zczytuje dane
+	List<String> gotoweWydarzenia = new ArrayList<>();
 
 	/**
 	 * Creates new form OknoGlowne
@@ -144,6 +139,7 @@ public class OknoGlowne extends javax.swing.JFrame
         jList1 = new javax.swing.JList();
         jLabel8 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        jMenu3 = new javax.swing.JMenu();
         jPanel1 = new javax.swing.JPanel();
         NazwaZdarzeniaField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -163,9 +159,11 @@ public class OknoGlowne extends javax.swing.JFrame
         DodajCzynnoscbtn = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        WczytajzPliku = new javax.swing.JMenuItem();
         WyznaczSciezke = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenu4 = new javax.swing.JMenu();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        WczytajzPliku = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
 
@@ -212,6 +210,8 @@ public class OknoGlowne extends javax.swing.JFrame
                 .addComponent(jButton1)
                 .addContainerGap(24, Short.MAX_VALUE))
         );
+
+        jMenu3.setText("jMenu3");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Logistyka CPM");
@@ -354,16 +354,6 @@ public class OknoGlowne extends javax.swing.JFrame
 
         jMenu1.setText("Plik");
 
-        WczytajzPliku.setText("Wczytaj plik");
-        WczytajzPliku.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                WczytajzPlikuActionPerformed(evt);
-            }
-        });
-        jMenu1.add(WczytajzPliku);
-
         WyznaczSciezke.setText("Ścieżka Krytyczna");
         WyznaczSciezke.addActionListener(new java.awt.event.ActionListener()
         {
@@ -386,6 +376,30 @@ public class OknoGlowne extends javax.swing.JFrame
         jMenu1.add(jMenuItem1);
 
         jMenuBar1.add(jMenu1);
+
+        jMenu4.setText("Narzędzia");
+
+        jMenuItem3.setText("Wyczyść projekt");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jMenuItem3);
+
+        WczytajzPliku.setText("Wczytaj plik");
+        WczytajzPliku.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                WczytajzPlikuActionPerformed(evt);
+            }
+        });
+        jMenu4.add(WczytajzPliku);
+
+        jMenuBar1.add(jMenu4);
 
         jMenu2.setText("Pomoc");
 
@@ -425,7 +439,7 @@ public class OknoGlowne extends javax.swing.JFrame
 	 */
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jMenuItem2ActionPerformed
     {//GEN-HEADEREND:event_jMenuItem2ActionPerformed
-		JOptionPane.showMessageDialog(null, "Metoda CPM\nAutorzy:\nPaweł Kastelik\nWiktoria Krzeminska\nKraków 2016", "O Programie!", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, "Metoda CPM\nAutorzy:\nPaweł Kastelik\nWiktoria Krzeminska\n\nDziekuje Kacper Popczynski za pomoc\nKraków 2016", "O Programie!", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
 	/**
@@ -442,29 +456,46 @@ public class OknoGlowne extends javax.swing.JFrame
 		}
 		else
 		{
-			//jak zadziala to dodaj zdarzenie do listy i do combobox i wyczysc textfield
-			Zdarzenie q = new Zdarzenie(NazwaZdarzeniaField.getText());
+			//Stworz zdarzenie o nazwie z textfieldu
+			Zdarzenie tmpZdarzenie = new Zdarzenie(NazwaZdarzeniaField.getText());
 			NazwaZdarzeniaField.setText(null);
+			boolean dodaj = true;
 
-			lastZdarzenieComboBox.addItem(new ComboItem(q.Nazwa, q));
-			nextZdarzenieComboBox.addItem(new ComboItem(q.Nazwa, q));
-
-			//jezeli to pierwsze wydarzenie to zdefiniuj wszystkie parametry
-			if (Wydarzenia.isEmpty())
+			//Sprawdz czy takie wydarzenie juz istnieje
+			for (Zdarzenie w : Wydarzenia)
 			{
-				q.start_time = 0;
-				q.end_time = 0;
-				q.luz = 0;
+				if (w.Nazwa.equals(tmpZdarzenie.Nazwa))
+				{
+					dodaj = false;
+					break;
+				}
 			}
-			//Dodaj do listy wydarzen
-			Wydarzenia.add(q);
-			//JOptionPane.showMessageDialog(null, "Wydarzenie zostało dodane!", "Komunikat", JOptionPane.INFORMATION_MESSAGE);
+
+			//Jezeli nie istnieje to mozesz dodac do listy Wydarzen i GUI
+			if (dodaj)
+			{
+				tmpZdarzenie.start_time = 0;
+				tmpZdarzenie.end_time = Integer.MAX_VALUE;
+				tmpZdarzenie.luz = 0;
+				Wydarzenia.add(tmpZdarzenie);
+				lastZdarzenieComboBox.addItem(new ComboItem(tmpZdarzenie.Nazwa, tmpZdarzenie));
+				nextZdarzenieComboBox.addItem(new ComboItem(tmpZdarzenie.Nazwa, tmpZdarzenie));
+				//JOptionPane.showMessageDialog(null, "Wydarzenie zostało dodane!", "Komunikat", JOptionPane.INFORMATION_MESSAGE);
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "Takie wydarzenie juz istnieje!", "Blad", JOptionPane.ERROR_MESSAGE);
+			}
 		}
     }//GEN-LAST:event_DodajZdarzeniebtnActionPerformed
 
+	/**
+	 * Zamyka program
+	 *
+	 * @param evt
+	 */
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jMenuItem1ActionPerformed
     {//GEN-HEADEREND:event_jMenuItem1ActionPerformed
-		//Zamknij program kurwa
 		dispose();
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
@@ -484,7 +515,7 @@ public class OknoGlowne extends javax.swing.JFrame
     }//GEN-LAST:event_CzasCzynnosciFieldKeyTyped
 
 	/**
-	 * Po podwojnym kliknieciu w liste pokazuje wiecej szczegolow
+	 * Po podwojnym kliknieciu w liste pokazuje wiecej szczegolow Czynnosci
 	 *
 	 * @param evt
 	 */
@@ -492,15 +523,16 @@ public class OknoGlowne extends javax.swing.JFrame
     {//GEN-HEADEREND:event_ZdarzeniaListaMouseClicked
 		if (evt.getClickCount() == 2)
 		{
+
 			Object it = ZdarzeniaLista.getSelectedValue();
 			Czynnosc q = ((ComboItem) it).getCzynnosc();
-			JOptionPane.showMessageDialog(null, "Poprzednie wydarzenie: " + q.poprzednie.Nazwa + "\nNastepne zdarzenie: " + q.nastepne.Nazwa + "\nCzas czynnosci: " + q.Czas, "Szczegolowe informacje", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Poprzednie wydarzenie: " + q.nazw_poprz + "\nNastepne zdarzenie: " + q.nazw_next + "\nCzas czynnosci: " + q.Czas, "Szczegolowe informacje", JOptionPane.INFORMATION_MESSAGE);
 		}
     }//GEN-LAST:event_ZdarzeniaListaMouseClicked
 
 	/**
-	 * Ma dodawac Czynnosci ale narazie kurwa musze zadzialac na pliku ja
-	 * pierdole :/
+	 * Dodaje Czynnosc na podstawie otrzymanych parametrow. Dodaje do listy i do
+	 * GUI
 	 *
 	 * @param evt
 	 */
@@ -509,46 +541,47 @@ public class OknoGlowne extends javax.swing.JFrame
 		//pola nie moga byc puste aby dodac poprawnie czynnosc bo wpp wyswietli odpowiedni error messagebox
 		if (!(lastZdarzenieComboBox.getSelectedItem() == null || nextZdarzenieComboBox.getSelectedItem() == null || CzasCzynnosciField.getText().isEmpty()))
 		{
-			boolean isOK = true;
-			Object o1 = lastZdarzenieComboBox.getSelectedItem();
-			Zdarzenie z1 = ((ComboItem) o1).getZdarzenie();
-			Object o2 = nextZdarzenieComboBox.getSelectedItem();
-			Zdarzenie z2 = ((ComboItem) o2).getZdarzenie();
-			if (!(z1 == z2))
+			boolean dodaj = true;
+			int id = 0;
+
+			//Pobranie danych z GUI
+			int tmpczs = Integer.parseInt(CzasCzynnosciField.getText());
+			Object ob1 = lastZdarzenieComboBox.getSelectedItem();
+			Object ob2 = nextZdarzenieComboBox.getSelectedItem();
+			Zdarzenie prv = ((ComboItem) ob1).getZdarzenie();
+			Zdarzenie nex = ((ComboItem) ob2).getZdarzenie();
+
+			//Sprawdza czy Istnieje juz taka czynnosc lub czynnosc odwrotna do niej
+			for (Czynnosc c : Strzalki)
 			{
-				for (Czynnosc x : Strzalki)
+				if (c.nazw_poprz.equals(prv.Nazwa) && c.nazw_next.equals(nex.Nazwa) || (c.nazw_next.equals(prv.Nazwa) && c.nazw_poprz.equals(nex.Nazwa)))
 				{
-					if (x.nastepne == z1 && x.poprzednie == z2)
-					{
-						isOK = false;
-						break;
-					}
+					dodaj = false;
+					break;
 				}
-				if (isOK)
-				{
-					Czynnosc tmp = new Czynnosc(Integer.parseInt(CzasCzynnosciField.getText()), z1, z2);
-					listModel.addElement(new ComboItem(tmp.poprzednie.Nazwa + " -> " + tmp.nastepne.Nazwa, tmp));
-					Strzalki.add(tmp);
-					CzasCzynnosciField.setText(null);
-					//JOptionPane.showMessageDialog(null, "Czynnosc zostala dodana!", "Komunikat", JOptionPane.INFORMATION_MESSAGE);
-				}
-				else
-				{
-					JOptionPane.showMessageDialog(null, "Nie mozesz utworzyc polaczenia dwustronnego", "Error!", JOptionPane.ERROR_MESSAGE);
-				}
+			}
+
+			//Jezeli nie to dodaje nowa czynnosc
+			if (dodaj)
+			{
+				Czynnosc nowa = new Czynnosc(Integer.toString(id), tmpczs, prv.Nazwa, nex.Nazwa);
+				Strzalki.add(nowa);
+				listModel.addElement(new ComboItem(nowa.nazw_poprz + " -> " + nowa.nazw_next, nowa));
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(null, "Nie mozesz polaczyc dwoch takich samych zdarzen", "Error!", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Taka czynnosc juz istnieje lub probowales polaczyc zdarzenia dwustronnie", "Error!", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		else
 		{
 			JOptionPane.showMessageDialog(null, "Nie wypelniles ktoregos z pol!", "Error!", JOptionPane.ERROR_MESSAGE);
 		}
+
     }//GEN-LAST:event_DodajCzynnoscbtnActionPerformed
 	/**
-	 * Uruchamia funkcje wyznaczajaca sciezke krytyczna. Osobna funkcja opisana
+	 * Uruchamia funkcje wyznaczajaca sciezke krytyczna. Osobna funkcja: Sciezka
+	 * Krytyczna
 	 *
 	 * @param evt
 	 */
@@ -558,8 +591,8 @@ public class OknoGlowne extends javax.swing.JFrame
     }//GEN-LAST:event_WyznaczSciezkeActionPerformed
 
 	/**
-	 * wczytuje dane z sformatowanego pliku: nazwa poprzedniego eventu, nazwa
-	 * nastepnego eventu, czas trwania
+	 * wczytuje dane z sformatowanego pliku: nazwa_czynnosci poprzedniego
+	 * eventu, nazwa_czynnosci nastepnego eventu, czas trwania
 	 *
 	 * @param evt
 	 */
@@ -568,7 +601,7 @@ public class OknoGlowne extends javax.swing.JFrame
 		//Sproboj odczytac plik a potem
 		try
 		{
-			//Wyczysc wszystko co bylo do tej pory.
+			//Wyczysc wszystko co bylo do tej pory
 			lastZdarzenieComboBox.removeAllItems();
 			nextZdarzenieComboBox.removeAllItems();
 			Wydarzenia.clear();
@@ -580,89 +613,113 @@ public class OknoGlowne extends javax.swing.JFrame
 			int tmpczs = 0;					//czas trwania wydarzenia
 			Scanner in = new Scanner(plik);	//scanner do czytania pliku
 
-			int zwieksz = 0;
+			int id = 1;
 			while (in.hasNext())			//dopoki end of file
 			{
-				boolean ist = false;
 				prv = in.next();			//pobierz dane
 				nex = in.next();
 				tmpczs = in.nextInt();
 
-				//jak lista pusta to dodaj i zdefiniuj pierwsze dwa eventy
-				if (Wydarzenia.isEmpty())
-				{
-					Wydarzenia.add(new Zdarzenie(prv));
-					Wydarzenia.add(new Zdarzenie(nex));
+				Zdarzenie tmpZdarzenie = new Zdarzenie(prv);
+				boolean dodaj = true;
 
-					Wydarzenia.get(zwieksz).start_time = 0;
-					Wydarzenia.get(zwieksz).end_time = Integer.MAX_VALUE;
-					Wydarzenia.get(zwieksz).luz = 0;
-				}
-				else
+				//Sprawdzam czy nie bylo takie wydarzenia
+				for (Zdarzenie w : Wydarzenia)
 				{
-					for (Zdarzenie q : Wydarzenia)
+					if (w.Nazwa.equals(prv))
 					{
-						if (q.Nazwa.equals(prv))
-						{
-							ist = true;
-							break;
-						}
-					}
-					if (ist == false)
-					{
-						Wydarzenia.add(new Zdarzenie(prv));
+						dodaj = false;
+						break;
 					}
 				}
 
-				//jezeli lista pusta to dodaj pierwsze wydarzenie z Wydarzen i nowe nastepne
-				if (Strzalki.isEmpty())
+				//Dodaje je do listy wydarzen
+				if (dodaj)
 				{
-					Strzalki.add(new Czynnosc(tmpczs, Wydarzenia.get(Wydarzenia.size() - 2), Wydarzenia.get(Wydarzenia.size() - 1)));
+					tmpZdarzenie.start_time = 0;
+					tmpZdarzenie.end_time = Integer.MAX_VALUE;
+					tmpZdarzenie.luz = 0;
+					Wydarzenia.add(tmpZdarzenie);
 				}
-				//wpp
-				else
-				{
-					//jezeli aktualny poprzednik jest rowny poprzedniemu nastepnikowi
-					if (prv.equals(Strzalki.get(Strzalki.size() - 1).nastepne.Nazwa))
-					{
-						Strzalki.add(new Czynnosc(tmpczs, Strzalki.get(Strzalki.size() - 1).nastepne, new Zdarzenie(nex)));
-					}
-					//a jezeli aktualny poprzednik nie jest rowny to znajdz ostatni element ktory nim byl!
-					else
-					{
-						int licz = 0;
-						for (Czynnosc x : Strzalki)
-						{
-							if (prv.equals(x.nastepne.Nazwa))
-							{
-								break;
-							}
-							licz++;
-						}
-						Strzalki.add(new Czynnosc(tmpczs, Strzalki.get(licz).nastepne, new Zdarzenie(nex)));
-					}
-				}
-				zwieksz++;
+
+				//Tworze nowa czynnosc
+				Czynnosc nowa = new Czynnosc(Integer.toString(id), tmpczs, prv, nex);
+				id++;
+				Strzalki.add(nowa);
 			}
 
-			Wydarzenia.add(new Zdarzenie(nex));	//dodaj ostatnie wydarzenie do listy
+			Zdarzenie nextTmp = new Zdarzenie(nex);
+			nextTmp.start_time = 0;
+			nextTmp.end_time = Integer.MAX_VALUE;
+			nextTmp.luz = 0;
+			Wydarzenia.add(nextTmp);	//dodaj ostatnie wydarzenie do listy
 
 			//for wypelnia wszystkie itemy w gui
+			for (int i = 0; i < Wydarzenia.size(); i++)
+			{
+				lastZdarzenieComboBox.addItem(new ComboItem(Wydarzenia.get(i).Nazwa, Wydarzenia.get(i)));
+				nextZdarzenieComboBox.addItem(new ComboItem(Wydarzenia.get(i).Nazwa, Wydarzenia.get(i)));
+			}
 			for (int i = 0; i < Strzalki.size(); i++)
 			{
-				if (i < Strzalki.size() - 1)
-				{
-					lastZdarzenieComboBox.addItem(new ComboItem(Wydarzenia.get(i).Nazwa, Wydarzenia.get(i)));
-					nextZdarzenieComboBox.addItem(new ComboItem(Wydarzenia.get(i).Nazwa, Wydarzenia.get(i)));
-				}
-				listModel.addElement(new ComboItem(Strzalki.get(i).poprzednie.Nazwa + " -> " + Strzalki.get(i).nastepne.Nazwa, Strzalki.get(i)));
+				listModel.addElement(new ComboItem(Strzalki.get(i).nazw_poprz + " -> " + Strzalki.get(i).nazw_next, Strzalki.get(i)));
 			}
-
 		} catch (FileNotFoundException ex)
 		{
-			//Logger.getLogger(OknoGlowne.class.getName()).log(Level.SEVERE, null, ex);
+			JOptionPane.showMessageDialog(this, ex, "Error", JOptionPane.ERROR_MESSAGE);
 		}
     }//GEN-LAST:event_WczytajzPlikuActionPerformed
+
+	/**
+	 * Usuwa wszystkie dane z projektu
+	 *
+	 * @param evt
+	 */
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jMenuItem3ActionPerformed
+    {//GEN-HEADEREND:event_jMenuItem3ActionPerformed
+		int dialogResult = JOptionPane.showConfirmDialog(null, "Czy chcesz usunąć projekt?", "UWAGA", JOptionPane.YES_NO_OPTION);
+		if (dialogResult == JOptionPane.YES_OPTION)
+		{
+			lastZdarzenieComboBox.removeAllItems();
+			nextZdarzenieComboBox.removeAllItems();
+			NazwaZdarzeniaField.setText(null);
+			CzasCzynnosciField.setText(null);
+			Wydarzenia.clear();
+			Strzalki.clear();
+			listModel.clear();
+		}
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+	/**
+	 * Wyswietla w konsoli Wszysttkie wydarzenia w liscie Wydarzenia
+	 */
+	public void PokazWydarzenia()
+	{
+
+		System.out.println("WYDARZENIA");
+		System.out.println("--------------------------------");
+
+		for (Zdarzenie w : Wydarzenia)
+		{
+			System.out.println("[" + w.Nazwa + "] start: " + w.start_time + ", end: " + w.end_time + ", luz: " + w.luz);
+		}
+		System.out.println("--------------------------------");
+	}
+
+	/**
+	 * Wyswietla w konsoli wyszystkie Czynnosci w liscie Strzalki
+	 */
+	public void PokazCzynnosci()
+	{
+		System.out.println("CZYNNOSCI");
+		System.out.println("--------------------------------");
+
+		for (Czynnosc w : Strzalki)
+		{
+			System.out.println("[" + w.nazwa_czynnosci + "] (" + w.nazw_poprz + ")----[" + w.Czas + "]----(" + w.nazw_next + ")");
+		}
+		System.out.println("--------------------------------");
+	}
 
 	/**
 	 * @param args the command line arguments
@@ -732,9 +789,12 @@ public class OknoGlowne extends javax.swing.JFrame
     private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

@@ -5,15 +5,16 @@
  */
 
 /**
- *
+ * Klasa potrzebna do wpisywania elementow do jcomboboxow, jlistow i innych
+ * Pobiera string wyswietlany w elemencie i obiekt sam w sobie.
  * @author kastel
  */
 public class ComboItem
 {
 
-	public String key;
-	public Zdarzenie value;
-	public Czynnosc val;
+	public String key;			//Wyswietlana nazwa w GUI
+	public Zdarzenie value;		//Obiekt klasy zdarzenie
+	public Czynnosc val;		//Obiekt klasy Czynnosc
 
 	public ComboItem(String key, Zdarzenie value)
 	{
@@ -27,17 +28,8 @@ public class ComboItem
 		this.val = value;
 	}
 
-	public ComboItem()
-	{
-	}
-
 	@Override
 	public String toString()
-	{
-		return key;
-	}
-
-	public String getNazwe()
 	{
 		return key;
 	}

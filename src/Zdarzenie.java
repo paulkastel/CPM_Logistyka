@@ -12,7 +12,7 @@ class Zdarzenie
 {
 	String Nazwa;
 
-	public int start_time; //Czas poczatkowy
+	public int start_time;	//Czas poczatkowy
 	public int end_time;	//Czas koncowy
 	public int luz;			//koncowy-poczatkowy = luz
 
