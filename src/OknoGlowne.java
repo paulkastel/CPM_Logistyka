@@ -98,7 +98,7 @@ public class OknoGlowne extends javax.swing.JFrame
 					cpm += z.Nazwa + ", ";
 				}
 			}
-			JOptionPane.showMessageDialog(null, cpm, "Sciezka krytyczna", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(null, cpm + "\nCzas realizacji: " + Wydarzenia.get(Wydarzenia.size() - 1).end_time, "Sciezka krytyczna", JOptionPane.PLAIN_MESSAGE);
 		}
 		else
 		{
@@ -541,36 +541,43 @@ public class OknoGlowne extends javax.swing.JFrame
 		//pola nie moga byc puste aby dodac poprawnie czynnosc bo wpp wyswietli odpowiedni error messagebox
 		if (!(lastZdarzenieComboBox.getSelectedItem() == null || nextZdarzenieComboBox.getSelectedItem() == null || CzasCzynnosciField.getText().isEmpty()))
 		{
-			boolean dodaj = true;
-			int id = 0;
-
 			//Pobranie danych z GUI
 			int tmpczs = Integer.parseInt(CzasCzynnosciField.getText());
 			Object ob1 = lastZdarzenieComboBox.getSelectedItem();
 			Object ob2 = nextZdarzenieComboBox.getSelectedItem();
 			Zdarzenie prv = ((ComboItem) ob1).getZdarzenie();
 			Zdarzenie nex = ((ComboItem) ob2).getZdarzenie();
-
-			//Sprawdza czy Istnieje juz taka czynnosc lub czynnosc odwrotna do niej
-			for (Czynnosc c : Strzalki)
+			//Jezeli to nie sa takie same obiekty to dodaj
+			if (!prv.Nazwa.equals(nex.Nazwa))
 			{
-				if (c.nazw_poprz.equals(prv.Nazwa) && c.nazw_next.equals(nex.Nazwa) || (c.nazw_next.equals(prv.Nazwa) && c.nazw_poprz.equals(nex.Nazwa)))
+				boolean dodaj = true;
+				int id = 0;
+
+				//Sprawdza czy Istnieje juz taka czynnosc lub czynnosc odwrotna do niej
+				for (Czynnosc c : Strzalki)
 				{
-					dodaj = false;
-					break;
+					if (c.nazw_poprz.equals(prv.Nazwa) && c.nazw_next.equals(nex.Nazwa) || (c.nazw_next.equals(prv.Nazwa) && c.nazw_poprz.equals(nex.Nazwa)))
+					{
+						dodaj = false;
+						break;
+					}
 				}
-			}
 
-			//Jezeli nie to dodaje nowa czynnosc
-			if (dodaj)
-			{
-				Czynnosc nowa = new Czynnosc(Integer.toString(id), tmpczs, prv.Nazwa, nex.Nazwa);
-				Strzalki.add(nowa);
-				listModel.addElement(new ComboItem(nowa.nazw_poprz + " -> " + nowa.nazw_next, nowa));
+				//Jezeli nie to dodaje nowa czynnosc
+				if (dodaj)
+				{
+					Czynnosc nowa = new Czynnosc(Integer.toString(id), tmpczs, prv.Nazwa, nex.Nazwa);
+					Strzalki.add(nowa);
+					listModel.addElement(new ComboItem(nowa.nazw_poprz + " -> " + nowa.nazw_next, nowa));
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "Taka czynnosc juz istnieje lub probowales polaczyc zdarzenia dwustronnie", "Error!", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(null, "Taka czynnosc juz istnieje lub probowales polaczyc zdarzenia dwustronnie", "Error!", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Nie mozesz polaczyc dwoch takich samych wydarzen!", "Error!", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		else
@@ -647,6 +654,7 @@ public class OknoGlowne extends javax.swing.JFrame
 				id++;
 				Strzalki.add(nowa);
 			}
+			
 
 			Zdarzenie nextTmp = new Zdarzenie(nex);
 			nextTmp.start_time = 0;
@@ -671,7 +679,7 @@ public class OknoGlowne extends javax.swing.JFrame
     }//GEN-LAST:event_WczytajzPlikuActionPerformed
 
 	/**
-	 * Usuwa wszystkie dane z projektu
+	 * Wyczyszcza dane z gui i z listy Wydarzen i z listy Czynnosci
 	 *
 	 * @param evt
 	 */
